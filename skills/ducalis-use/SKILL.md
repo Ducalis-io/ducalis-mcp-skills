@@ -8,7 +8,7 @@ description: >
 
 # Ducalis — Backlog Prioritization Tool
 
-Use `read_ducalis` and `write_ducalis` tools to interact with Ducalis.
+Use `read_ducalis`, `write_ducalis`, and `web_research` tools to interact with Ducalis.
 
 ## Language
 
