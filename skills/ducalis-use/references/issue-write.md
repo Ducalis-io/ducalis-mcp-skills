@@ -26,7 +26,11 @@ NEVER call `write_ducalis` with `confirm: true` without first receiving the `[WR
 - Required: `board_uuid`, `issue_id`
 
 **add_label** / **remove_label** — Manage issue labels (SEPARATE endpoints, NOT part of update_issue)
-- Required: `board_uuid`, `issue_id`, `label_id`
+- Required: `board_uuid`, `issue_id`, + either `label_id` or `label_name` (auto-resolved)
+
+**create_label** — Create a new workspace-level label
+- Required: `name`
+- Optional: `color` (named token: red, blue, green, orange, amber, yellow, grass, teal, cyan, sky, indigo, violet, plum, crimson, brown, tomato)
 
 **add_watcher** / **remove_watcher** — Manage issue watchers
 - Required: `board_uuid`, `issue_id`, `user_id`
@@ -36,6 +40,32 @@ NEVER call `write_ducalis` with `confirm: true` without first receiving the `[WR
 - `link_issues` also requires `type`: `link` (related) or `block` (blocks/depends on)
 - `unlink_issues`: `type` is optional
 
+### Label workflow — ALWAYS batch, ALWAYS discover first
+
+Labels are workspace-scoped (shared across ALL boards). Creating duplicates pollutes the dictionary for every user.
+
+**Mandatory flow (4-5 tool calls max for any label operation):**
+
+1. **Discover** — read board issues + workspace dictionary in parallel:
+   - `read_ducalis({ resource: "issues", board_uuid, include: ["labels"], limit: 1 })` — meta has `board_labels: [{name, count}]`
+   - `read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "label" } })` — full dictionary with IDs
+2. **Analyze & present** — tell the user what you found:
+   - Which labels exist on this board (from board_labels meta)
+   - Which workspace labels could be reused
+   - Which new labels would need to be created
+   - Ask: *"Reuse existing, create new, or both?"*
+3. **Batch create** missing labels (ONE tool call):
+   `write_ducalis({ action: "batch", params: { action: "create_label", items: [{name: "resource", color: "blue"}, {name: "skill", color: "green"}, ...] } })`
+4. **Batch assign** labels to issues (ONE tool call):
+   `write_ducalis({ action: "batch", params: { action: "add_label", items: [{board_uuid, issue_id: 123, label_name: "resource"}, {board_uuid, issue_id: 123, label_name: "skill"}, ...] } })`
+
+**CRITICAL — use batch, not individual calls:**
+- ✗ NEVER call `create_label` 12 times — use ONE `batch` with `create_label` items
+- ✗ NEVER call `add_label` 20 times — use ONE `batch` with `add_label` items
+- ✗ NEVER create labels without first checking dictionary
+- ✗ NEVER create a label when a similar one exists ("UI" exists → don't create "ui")
+- ✗ NEVER pass labels to `update_issue` — it silently ignores them
+
 ### Batch operations
 
 For 2+ identical operations, use the `batch` action (see base skill for syntax). Present all items as text for user confirmation first. One tool call → one UI card.
@@ -44,7 +74,7 @@ For 2+ identical operations, use the `batch` action (see base skill for syntax).
 
 - **Board UUID**: `read_ducalis({ resource: "boards" })` — always step 1
 - **Assignee/reporter**: `read_ducalis({ resource: "board", board_uuid, include: ["members"] })`
-- **Labels/status/type IDs**: `read_ducalis({ resource: "issues", board_uuid, include: ["labels"], limit: 1 })` — dictionaries in context
+- **Labels/status/type IDs**: `read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "label" } })` — workspace-level dictionary
 - **Issue existence**: `read_ducalis({ resource: "issue", board_uuid, issue_id })` — verify before update/delete
 
 ### Gotchas

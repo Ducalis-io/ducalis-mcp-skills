@@ -19,8 +19,7 @@ Teaches AI agents how to work with Ducalis via `read_ducalis` / `write_ducalis` 
   - `gantt.md` — timeline planning, scheduling, dependencies
   - `questions.md` — question threads, discussions
   - `board-info.md` — board details, settings, members
-  - `capacity-planning.md` — sprint capacity planning workflow (example)
-  - `compliance-risk.md` — regulatory compliance risk workflow (example)
+  - `web-research.md` — web search and content extraction
 
 ## Installation
 

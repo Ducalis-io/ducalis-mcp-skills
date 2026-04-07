@@ -46,6 +46,7 @@ and clarifications between team members.
    Names/titles: plain text (no HTML tags).
 4. **Compact by default** — 2-4 paragraphs unless user asks for detail.
 5. **Max 10 tool calls** per message. If more needed, simplify or ask user to narrow.
+6. **Labels are workspace-scoped** — before creating new labels, ALWAYS fetch existing ones first (`resource: "dictionaries"`) and suggest reuse. Ask before creating.
 
 ## Before Write Operations
 
@@ -67,7 +68,5 @@ Before complex operations, load the relevant guide:
 - **Searching/filtering issues** → load `references/issue-search.md`
 - **Question threads** → load `references/questions.md`
 - **Board settings, criteria, members** → load `references/board-info.md`
+- **Web research (explicit request only)** → load `references/web-research.md`
 
-Enterprise workflow examples (fork and customize):
-- **Sprint capacity planning** → see `references/capacity-planning.md`
-- **Regulatory compliance risk** → see `references/compliance-risk.md`
