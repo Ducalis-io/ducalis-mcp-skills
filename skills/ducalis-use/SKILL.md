@@ -67,7 +67,8 @@ Before complex operations, load the relevant guide:
 - **Creating/updating issues** → load `references/issue-write.md`
 - **Searching/filtering issues** → load `references/issue-search.md`
 - **Question threads** → load `references/questions.md`
-- **Board settings, criteria, members** → load `references/board-info.md`
+- **Board info, criteria, members** → load `references/board-info.md`
+- **Create board, description, rename** → load `references/board-settings.md`
 - **Criteria management (link, weight, evaluators)** → load `references/criteria-management.md`
 - **Web research (explicit request only)** → load `references/web-research.md`
 
