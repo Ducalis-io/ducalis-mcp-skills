@@ -68,5 +68,6 @@ Before complex operations, load the relevant guide:
 - **Searching/filtering issues** → load `references/issue-search.md`
 - **Question threads** → load `references/questions.md`
 - **Board settings, criteria, members** → load `references/board-info.md`
+- **Criteria management (link, weight, evaluators)** → load `references/criteria-management.md`
 - **Web research (explicit request only)** → load `references/web-research.md`
 
