@@ -52,4 +52,4 @@ Use `update_question_message` to edit a reply:
 - ALWAYS set `limit` (default: 20, use 50 for full board scan)
 - `assignee_id` and `author_id` are in defaults — use them directly
 - `issue_name` always shown — no extra include needed
-- For creating/replying/resolving → see evaluation-write skill
+- For creating/replying/resolving -- see evaluation-write skill

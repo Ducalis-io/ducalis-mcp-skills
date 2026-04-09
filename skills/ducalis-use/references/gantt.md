@@ -41,7 +41,7 @@ Compare issue IDs with gantt results — issues NOT in gantt are unscheduled.
 **plan_gantt** — Add tasks with position, color, AND dates in ONE action
 - Required: `board_uuid`, `entries[]` — each with `issue_id`, `position` (number), `start_date` (YYYY-MM-DD), `end_date` (YYYY-MM-DD), optional `color` (hex), `issue_name`
 - **Use this when you have both positions and dates** (e.g. capacity planning, sprint planning)
-- **Color strategy**: assign colors by topic/theme. Related tasks (same area, blockers) → same color. Different themes → different colors. Palette: `#4A90D9` `#E67E22` `#27AE60` `#9B59B6` `#E74C3C` `#1ABC9C` `#F39C12` `#2C3E50`
+- **Color strategy**: assign colors by topic/theme. Related tasks (same area, blockers) get same color. Different themes get different colors. Palette: `#4A90D9` `#E67E22` `#27AE60` `#9B59B6` `#E74C3C` `#1ABC9C` `#F39C12` `#2C3E50`
 
 ```
 write_ducalis({ action: "plan_gantt", params: { board_uuid, entries: [
@@ -86,7 +86,7 @@ write_ducalis({ action: "link_issues", params: { board_uuid, issue_id, linked_is
 **Format: YYYY-MM-DD only** (e.g. `"2026-04-03"`). NEVER use DD.MM, DD.MM.YYYY, or other formats — the API will reject them. Use YYYY-MM-DD in tables, previews, and API calls consistently.
 
 **Weekend skipping**: Only workdays (Mon-Fri) count.
-- A task ending Friday → next task starts Monday
+- A task ending Friday: next task starts Monday
 - A 1-day task on Friday: start=Friday, end=Friday
 - A 2-day task starting Friday: start=Friday, end=Monday
 
@@ -118,4 +118,4 @@ Worked example (start = 2026-04-03 Friday):
 - **Separate actions**: use `set_board_gantt` (position only) + `set_gantt_dates` (dates only) when modifying just one aspect
 - After changes: `[timeline](/board/{uuid}/gantt)`
 
-For "open Gantt" → `[Open Gantt](/board/{uuid}/gantt)`. Link tasks as `[Task Name](/issue/{id})`.
+For "open Gantt": `[Open Gantt](/board/{uuid}/gantt)`. Link tasks as `[Task Name](/issue/{id})`.

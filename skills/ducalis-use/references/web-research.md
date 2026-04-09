@@ -14,7 +14,7 @@
 
 1. User asks to search/read something from the web
 2. You respond: "Я поищу в интернете: [что именно]. Это поможет [зачем]. Искать?"
-3. User confirms → call `web_research`
+3. User confirms: call `web_research`
 4. Present results with source URLs
 
 ### Patterns

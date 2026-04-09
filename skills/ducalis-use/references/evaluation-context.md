@@ -4,7 +4,7 @@
 
 **"What are my criteria?" / "How should I evaluate?"**
 `read_ducalis({ resource: "board", board_uuid: "...", include: ["my_criteria"] })`
-→ Returns per criterion: `{ name, type, description, scale }`
+Returns per criterion: `{ name, type, description, scale }`
 - `type`: "value" (benefit) or "effort" (cost)
 - `description`: what this criterion measures and what each scale value means
 - `scale`: discrete values to choose from, e.g. "1,2,3,5,8,13"
@@ -14,7 +14,7 @@
 
 **"All board criteria" (admin overview)**
 `read_ducalis({ resource: "board", board_uuid: "...", include: ["criteria_full"] })`
-→ `criteria_full` = ALL criteria with coefficients (admin view). `my_criteria` = only criteria assigned to current user (for evaluation).
+`criteria_full` = ALL criteria with coefficients (admin view). `my_criteria` = only criteria assigned to current user (for evaluation).
 
 ### Gotchas
 - Criterion `description` contains what each scale value means — ALWAYS show to user before they evaluate

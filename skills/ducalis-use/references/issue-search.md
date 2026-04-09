@@ -38,9 +38,9 @@ Returns basic fields (name, status, type, description, assignee). No score/crite
 - ID-based: `assignee_id`, `reporter_id`, `status_id`, `type_id` — use `eq` or `in` for exact match. ⚠️ `assignee_id` may be null for tracker-synced tasks.
 
 ### Navigation
-- "Open issue #X" → `[Issue Name](/issue/{id})` — NO API call needed
-- After listing → format each as `[Issue Name](/issue/{id})`
-- "Open backlog" → `[Open Backlog](/board/{uuid}/summary)`
+- "Open issue #X": `[Issue Name](/issue/{id})` — NO API call needed
+- After listing: format each as `[Issue Name](/issue/{id})`
+- "Open backlog": `[Open Backlog](/board/{uuid}/summary)`
 
 ### Rules
 - ALWAYS set limit — never fetch unlimited

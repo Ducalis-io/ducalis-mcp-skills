@@ -6,7 +6,7 @@
 1. Find board: `read_ducalis({ resource: "boards" })`
 2. Get limit: `read_ducalis({ resource: "board", board_uuid: "...", include: ["top_priority"] })`
 3. Fetch: `read_ducalis({ resource: "issues", board_uuid: "...", include: ["score", "voting_percent"], sort_by: "score", sort_order: "desc", limit: <top_priority> })`
-→ ALWAYS use board's `top_priority` value as limit — this is the board owner's setting.
+ALWAYS use board's `top_priority` value as limit — this is the board owner's setting.
 
 **"Lowest priority items"**
 Same steps but `sort_order: "asc"` in step 3.

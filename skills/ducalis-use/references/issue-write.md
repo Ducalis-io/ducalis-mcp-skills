@@ -9,8 +9,8 @@ NEVER call `write_ducalis` with `confirm: true` without first receiving the `[WR
 1. User requests an issue change (create, edit, delete, label, etc.)
 2. Gather required data via `read_ducalis` — resolve IDs from names
 3. Call `write_ducalis({ action, params, confirm: false })` **in the same response** — preview card with OK/Edit buttons appears automatically. Do NOT ask for text confirmation.
-4. User clicks OK → you receive `[WRITE_CONFIRMED]` → immediately call `write_ducalis` with the SAME action and params + `confirm: true`
-5. User clicks Edit → you receive `[WRITE_EDIT] <instructions>` → adjust params per instructions, call `confirm: false` again
+4. User clicks OK: you receive `[WRITE_CONFIRMED]`. Immediately call `write_ducalis` with the SAME action and params + `confirm: true`
+5. User clicks Edit: you receive `[WRITE_EDIT] <instructions>`. Adjust params per instructions, call `confirm: false` again
 
 ### Actions
 
@@ -63,12 +63,12 @@ Labels are workspace-scoped (shared across ALL boards). Creating duplicates poll
 - ✗ NEVER call `create_label` 12 times — use ONE `batch` with `create_label` items
 - ✗ NEVER call `add_label` 20 times — use ONE `batch` with `add_label` items
 - ✗ NEVER create labels without first checking dictionary
-- ✗ NEVER create a label when a similar one exists ("UI" exists → don't create "ui")
+- ✗ NEVER create a label when a similar one exists ("UI" exists -- don't create "ui")
 - ✗ NEVER pass labels to `update_issue` — it silently ignores them
 
 ### Batch operations
 
-For 2+ identical operations, use the `batch` action (see base skill for syntax). Present all items as text for user confirmation first. One tool call → one UI card.
+For 2+ identical operations, use the `batch` action (see base skill for syntax). Present all items as text for user confirmation first. One tool call, one UI card.
 
 ### Prerequisite reads — resolve IDs before writing
 

@@ -7,7 +7,7 @@ Use user id from current context.
 
 **"What do I need to evaluate?"**
 `read_ducalis({ resource: "issues", board_uuid: "...", user_id: <id>, include: ["my_voting_progress", "score"], sort_by: "score", sort_order: "desc", limit: 20 })`
-→ Returns ONLY unevaluated active issues for this user. Add `missing_criteria` to show which criteria are left.
+Returns ONLY unevaluated active issues for this user. Add `missing_criteria` to show which criteria are left.
 
 **"How many issues left for me?"**
 `read_ducalis({ resource: "issues", board_uuid: "...", user_id: <id>, count: true })`
@@ -23,11 +23,11 @@ Use user id from current context.
 `read_ducalis({ resource: "issues", board_uuid: "...", include: ["voting_percent", "all_voted"], where: { field: "all_voted", op: "eq", value: true } })`
 
 ### Gotchas
-- `user_id` on issues → only unevaluated active tasks (excludes done, excludes skipped)
-- `user_id` on boards → only boards where user has evaluation assignments
-- Without `user_id` → all items (team view)
-- `missing_criteria` → names of criteria user hasn't voted on yet
+- `user_id` on issues: only unevaluated active tasks (excludes done, excludes skipped)
+- `user_id` on boards: only boards where user has evaluation assignments
+- Without `user_id`: all items (team view)
+- `missing_criteria`: names of criteria user hasn't voted on yet
 - `my_voting_progress` = "3/5" or "skipped" (personal)
 - `voting_percent` / `all_voted` = TEAM progress
 - When listing issues, format as `[Issue Name](/issue/{id})`
-- For "open evaluation" → `[Open Evaluation](/board/{uuid}/unvoted)`
+- For "open evaluation": `[Open Evaluation](/board/{uuid}/unvoted)`

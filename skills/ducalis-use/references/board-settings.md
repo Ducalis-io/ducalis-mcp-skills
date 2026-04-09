@@ -20,7 +20,7 @@ Board description is a living document (wiki) where the user captures goals, met
 **Create a new board**
 `write_ducalis({ action: "create_board", params: { name: "...", emoji: "...", description: "<p>...</p>", platform_id: <from context> } })`
 - `name` required, `emoji` and `description` optional
-- `platform_id`: take from `## Current Context` → `Ducalis platform_id` (always pass it)
+- `platform_id`: take from `## Current Context` -- `Ducalis platform_id` (always pass it)
 - Description format: HTML fragments (`<p>`, `<h3>`, `<ul>`, `<strong>`)
 - After creation, link to the new board: `[Board Name](/board/{uuid}/summary)`
 

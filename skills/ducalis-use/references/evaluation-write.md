@@ -6,8 +6,8 @@
 2. Gather all required data via `read_ducalis`
 3. Present proposed scores/actions as text with reasoning (scale descriptions, rationale)
 4. Call `write_ducalis({ action, params, confirm: false })` **in the same response** — a preview card may appear
-5. User confirms (button click sends `[WRITE_CONFIRMED]`, OR user types "да"/"давай"/"ок"/"yes") → call `write_ducalis` with SAME action/params + `confirm: true`
-6. User wants changes (`[WRITE_EDIT]` or text instructions) → adjust params, call `confirm: false` again
+5. User confirms (button click sends `[WRITE_CONFIRMED]`, OR user types "да"/"давай"/"ок"/"yes"): call `write_ducalis` with SAME action/params + `confirm: true`
+6. User wants changes (`[WRITE_EDIT]` or text instructions): adjust params, call `confirm: false` again
 
 NEVER display `[WRITE_CONFIRMED]` or `[WRITE_EDIT]` in your text — these are hidden system signals.
 

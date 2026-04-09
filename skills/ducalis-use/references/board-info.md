@@ -23,4 +23,4 @@
 ### Gotchas
 - Board names may contain emoji — match by name text, not emoji
 - When listing boards, format each as a clickable markdown link: `[Board Name](/board/{uuid}/summary)`
-- For creating boards or editing description/name/emoji → load `references/board-settings.md`
+- For creating boards or editing description/name/emoji -- see `references/board-settings.md`
