@@ -80,6 +80,8 @@ Before complex operations, load the relevant guide:
 - **Creating/updating issues** -- see `references/issue-write.md`
 - **Searching/filtering issues** -- see `references/issue-search.md`
 - **Question threads** -- see `references/questions.md`
+- **Ideas (browse, votes, voters, comments)** -- see `references/ideas.md`
+- **Ideas write (create, vote, comment, merge, copy/move, label/status mgmt)** -- see `references/idea-write.md`
 - **Board info, criteria, members** -- see `references/board-info.md`
 - **Create board, description, rename** -- see `references/board-settings.md`
 - **Criteria management (link, weight, evaluators)** -- see `references/criteria-management.md`
