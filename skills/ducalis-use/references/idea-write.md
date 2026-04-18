@@ -106,6 +106,17 @@ For subsequent chat turns where the user says "update that idea I just created",
 
 Use `voting_user_id` (admin vote) or `custom_vote_idea` (by email) ONLY when the user explicitly says "Иван проголосовал за X" / "vote on behalf of foo@example.com". Never proactive.
 
+### Создать идею от имени voter (recommended workflow)
+
+When the user says "создай идею от <имя> из <компании>" / "idea request from <email>" — full workflow lives in `voter-write.md`. TL;DR:
+
+1. `read_ducalis({ resource: "voting_users", query: "<имя или email>" })` — search.
+2. Disambiguate / confirm new voter creation.
+3. (Optional) `read_ducalis({ resource: "similar_ideas", board_uuid, query: "<рабочее название>" })` — duplicate check.
+4. `create_idea` with `voting_user_id` (preferred) OR `voting_user_email` shortcut + `vote: 1`.
+
+The `voting_user_email` shortcut on `create_idea` resolves email → voter id at execute. It throws if the email isn't a known voter — so always offer `create_voting_user` first when search returns 0.
+
 ### Gotchas
 
 - `description`, `message` — HTML fragments (`<p>`, `<strong>`, `<ul>/<li>`, `<a>`), NOT Markdown

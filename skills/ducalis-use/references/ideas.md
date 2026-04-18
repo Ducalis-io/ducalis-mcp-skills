@@ -60,6 +60,44 @@ Idea-side dictionaries are exposed alongside issue ones:
 `read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "idea_status" } })`
 `read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "idea_label" } })`
 
+### Filter by voter / company (cross-board by default)
+
+Ideas resource accepts four optional pre-filters: `voter_id`, `voter_email`, `company_id`, `company_name`. They resolve to `idea_id` sets (authored ∪ voted) across the whole workspace.
+
+**`board_uuid` is OPTIONAL when a voter/company filter is set** — by default the resolver scans ALL accessible boards and returns matching ideas with their original `board_uuid` stamped on each item. This is the right default: a customer's request can land on any board (feature, bug, support).
+
+```
+// "Что просит <Customer>" (cross-board — любой борд из доступных):
+read_ducalis({ resource: "ideas", company_name: "<Customer>", sort_by: "vote_count", sort_order: "desc", limit: 10 })
+
+// Последние 10 запросов от <Customer>:
+read_ducalis({ resource: "ideas", company_name: "<Customer>", sort_by: "create_date", sort_order: "desc", limit: 10 })
+
+// Идеи voter'а (по email, везде):
+read_ducalis({ resource: "ideas", voter_email: "<voter@example.com>" })
+
+// Тот же запрос, но узко на одном борде:
+read_ducalis({ resource: "ideas", board_uuid, company_name: "<Customer>" })
+
+// Подсчёт без выгрузки items:
+read_ducalis({ resource: "ideas", company_id: <id>, where: { field: "status", op: "eq", value: "Inbox" }, count: true })
+```
+
+**Cross-board meta:** when no `board_uuid` is given, `_meta` returns `mode: "cross_board"`, `total_matching_company_voter`, `visible_in_workspace`, `inaccessible_count`, `boards_scanned`. If `inaccessible_count > 0` — те идеи лежат на бордах без доступа у текущего токена. Скажи юзеру: "Видно N из M, остальные на закрытых бордах".
+
+For browsing voters/companies as primary entities, see `voters.md`.
+
+### Voters & dynamics on a single idea
+
+`include: ["voter_count", "voter_emails", "company_names"]` on `idea` singular gives you who voted without dumping full voter objects.
+`include: ["stats"]` triggers a lazy fetch of `/rest/boards/{uuid}/ideas/{id}/stats` (votes_total, voters_count, companies_count).
+
+### Pre-create de-dup check
+
+Before `create_idea`, check whether something similar already exists on the board:
+`read_ducalis({ resource: "similar_ideas", board_uuid, query: "<рабочее название>" })`
+Defaults to top-5. Surfaces id + name + status + vote_count.
+
 ### Navigation
 
 Each idea has `link: "/idea/{id}"`. Render as `[Idea Name](/idea/{id})` — chat adapter intercepts and opens the idea inside the iframe.

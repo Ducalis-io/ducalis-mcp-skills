@@ -82,6 +82,8 @@ Before complex operations, load the relevant guide:
 - **Question threads** -- see `references/questions.md`
 - **Ideas (browse, votes, voters, comments)** -- see `references/ideas.md`
 - **Ideas write (create, vote, comment, merge, copy/move, label/status mgmt)** -- see `references/idea-write.md`
+- **Voters & companies (browse, segment-filter, per-customer ideas)** -- see `references/voters.md`
+- **Voter management (CRUD, subscribe, bulk, attach to board)** -- see `references/voter-write.md`
 - **Board info, criteria, members** -- see `references/board-info.md`
 - **Create board, description, rename** -- see `references/board-settings.md`
 - **Criteria management (link, weight, evaluators)** -- see `references/criteria-management.md`
