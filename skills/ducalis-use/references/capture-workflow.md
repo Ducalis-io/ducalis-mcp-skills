@@ -18,12 +18,14 @@ customer message to save into Ducalis.
 ```
 read_ducalis({
   resource: "boards",
-  include: ["voting", "members_full", "description_template"],
+  include: ["voting", "members_full", "description_template", "idea_description_template"],
 })
 ```
 
 Each result has: `uuid`, `name`, `emoji`, `voting.{name,emoji,enabled}`,
-`members_full[{id,name,email}]`, `description_template`.
+`members_full[{id,name,email}]`, `description_template` (issue template),
+`idea_description_template` (voting-board idea template — only present when
+Idea Template is enabled in board settings).
 
 **Board matching rules:**
 - Match the user's words against `name` and `voting.name`
@@ -79,9 +81,11 @@ Work these out without narrating them in chat:
   pick the closest and note alternatives in the preview.
 
 **Description (HTML, two parts, always in this order):**
-1. Structured top part shaped by the board's `description_template` — keep it
-   short: 2-4 concise paragraphs (`<p>`), bullet lists where natural. If the
-   board has no template, write a brief context/intent paragraph.
+1. Structured top part shaped by the board's template — for **ideas** prefer
+   `idea_description_template` (voting board's Idea Template), for **issues**
+   use `description_template`. Keep it short: 2-4 concise paragraphs (`<p>`),
+   bullet lists where natural. If the board has no matching template, write a
+   brief context/intent paragraph.
 2. Raw source at the end:
    ```html
    <hr>
@@ -101,6 +105,10 @@ Final visible text before the confirm card:
 
 > Создам *[идею/задачу]* *[title]* в борде *[Board]*, assignee *[Name]*,
 > теги *[labels or —]*. Верно?
+
+For **ideas** on a voting board, use `voting.name` as `[Board]` (that's the
+user-facing name of the voting board — e.g. "Public Roadmap"). Use `name` only
+for issues or when `voting.name` is absent.
 
 Then call exactly once:
 
