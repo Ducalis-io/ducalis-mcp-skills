@@ -56,38 +56,30 @@ If the user wants a different board or assignee — adjust and show the preview 
 
 ---
 
-### Step 4: Fetch templates and statuses before writing
+### Step 4: Fetch idea statuses (ideas only)
 
-**For Ideas:**
 ```
 read_ducalis({ resource: "dictionaries", board_uuid, where: { field: "type", op: "eq", value: "idea_status" } })
 ```
-Find the "incoming" status: look for `system_status = "new"` or the first status in the list.
-Use that `status_id` when creating the idea (ideas land in the first/incoming column by default).
+Find the "incoming" status: `system_status = "new"` or the first status in the list.
+Use that `status_id` when creating the idea.
 
-**For Issues:**
-```
-read_ducalis({ resource: "board", board_uuid, include: ["description_template"] })
-```
-If `description_template` is non-empty — use it as the structure for the formatted description.
+For issues: skip this step — create directly.
 
 ---
 
-### Step 5: Two-pass write
+### Step 5: Create — ONE write_ducalis call
 
-**Pass 1 — Raw**: Create with `description` = verbatim source text (the Slack thread, email, user's words as-is).
-This preserves the original in revision history.
+Call `write_ducalis({ action: "create_idea" | "create_issue", params, confirm: false })`.
+Include the original source context in `description` (briefly quote the customer request).
+**Only ONE `write_ducalis({ confirm: false })` per response — never two.**
 
-**Pass 2 — Formatted**: Immediately call `update_idea` / `update_issue` with `description` reformatted
-per the board's template (and in the template's language — ru/en as the template uses).
-
-Both passes go through the normal confirm flow.
-If no template exists — skip Pass 2; the raw text IS the description.
+After `[WRITE_CONFIRMED]` → call with `confirm: true`.
 
 ---
 
 ### Gotchas
 
-- `voting.enabled = false` → board has no public ideas board; create ideas there anyway (they just won't be public)
-- After Pass 1 create, use the returned `idea_id` / `issue_id` directly in Pass 2 (don't re-search — indexing lag)
+- `voting.enabled = false` → no separate ideas board; still create idea on that board
+- NEVER call `write_ducalis({ confirm: false })` twice in the same response
 - Always link result: `[Idea Name](/idea/{id})` or `[#ID](/issue/{id})`
