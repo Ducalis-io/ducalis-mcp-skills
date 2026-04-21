@@ -37,6 +37,12 @@ Cannot be set directly. Change evaluations and the score recalculates.
 **Request** — question thread about an issue. Used for async discussions
 and clarifications between team members.
 
+**Ideas Board** — optional public-facing board for collecting feature requests (voting/ideas).
+Each regular board may have an Ideas Board (`voting_settings.enabled = true`, `voting_settings.name` = its title).
+Ideas are unformed signals (customer requests, fresh feedback, "from the top of the head") with voters.
+Issues are structured backlog items ready for evaluation and sprint planning.
+When in doubt — **default to idea**, not issue.
+
 ## Universal Rules
 
 1. **NEVER fabricate UUIDs or IDs** — always fetch first via `read_ducalis`.
@@ -77,6 +83,7 @@ Before complex operations, load the relevant guide:
 - **Understanding scores, alignment** -- see `references/evaluation-context.md`
 - **Finding evaluation assignments** -- see `references/evaluation-discovery.md`
 - **Priority queries and ranking** -- see `references/priorities.md`
+- **Capturing any signal (Slack thread, email, idea, bug) into Ducalis** -- see `references/capture-workflow.md`
 - **Creating/updating issues** -- see `references/issue-write.md`
 - **Searching/filtering issues** -- see `references/issue-search.md`
 - **Question threads** -- see `references/questions.md`

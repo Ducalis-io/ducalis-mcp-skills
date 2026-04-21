@@ -2,6 +2,12 @@
 
 ### Patterns
 
+**"List boards for creation / find the right board"**
+`read_ducalis({ resource: "boards", include: ["voting"] })`
+- `voting.enabled = true` means this board has a linked Ideas Board (`voting.name` = its display name)
+- Show: `🚀 Help Center Deploy → ideas: 💡 Help Center Ideas`
+- If user mentions an unknown word (e.g. "роадмапе", "маркетинг") — treat it as a board name filter, not a Ducalis entity type
+
 **"Show my boards" / "Find a board"**
 `read_ducalis({ resource: "boards" })`
 
