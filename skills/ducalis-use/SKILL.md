@@ -38,7 +38,7 @@ Cannot be set directly. Change evaluations and the score recalculates.
 and clarifications between team members.
 
 **Ideas Board** — optional public-facing board for collecting feature requests (voting/ideas).
-Each regular board may have an Ideas Board (`voting_settings.enabled = true`, `voting_settings.name` = its title).
+Each regular board may have an Ideas Board (`voting.enabled = true`, `voting.name` = its title).
 Ideas are unformed signals (customer requests, fresh feedback, "from the top of the head") with voters.
 Issues are structured backlog items ready for evaluation and sprint planning.
 When in doubt — **default to idea**, not issue.
@@ -84,6 +84,7 @@ Before complex operations, load the relevant guide:
 - **Finding evaluation assignments** -- see `references/evaluation-discovery.md`
 - **Priority queries and ranking** -- see `references/priorities.md`
 - **Capturing any signal (Slack thread, email, idea, bug) into Ducalis** -- see `references/capture-workflow.md`
+  (This is the *primary* path for "закинь/запиши/оформи/создай задачу". When it's active, do **not** also load `issue-write`, `idea-write`, or `board-info` — `capture-workflow` is self-contained.)
 - **Creating/updating issues** -- see `references/issue-write.md`
 - **Searching/filtering issues** -- see `references/issue-search.md`
 - **Question threads** -- see `references/questions.md`
