@@ -51,7 +51,7 @@ When in doubt — **default to idea**, not issue.
    (`<p>`, `<strong>`, `<em>`, `<ul>/<ol>/<li>`, `<h3>`, `<a href>`, `<br>` — NOT markdown).
    Names/titles: plain text (no HTML tags).
 4. **Max 10 tool calls** per message. If more needed, simplify or ask user to narrow.
-5. **Labels are workspace-scoped** — before creating new labels, ALWAYS fetch existing ones first (`resource: "dictionaries"`) and suggest reuse. Ask before creating.
+5. **Check existing labels before creating** — fetch via `read_ducalis({ resource: "labels", board_uuid, kind: "issue" | "idea" })` and suggest reuse. Ask before creating a new one.
 
 ## Communication Style
 

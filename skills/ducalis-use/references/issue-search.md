@@ -30,7 +30,7 @@ Returns basic fields (name, status, type, description, assignee). No score/crite
 - Sprint: include `sprint, completed`
 - Labels: include `labels` — meta auto-includes `board_labels` (unique labels on this board with usage count, sorted by count desc)
 - By score: `sort_by: "score", sort_order: "desc"`, include `criteria_scores`
-- Label discovery (all IDs for write): `read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "label" } })`
+- Label discovery (all IDs for write): `read_ducalis({ resource: "labels", board_uuid: "<uuid>", kind: "issue" })`
 
 ### Filter fields
 - Email-based: `assignee_email` — most reliable, same across Ducalis and tracker. Use `eq` for exact match.

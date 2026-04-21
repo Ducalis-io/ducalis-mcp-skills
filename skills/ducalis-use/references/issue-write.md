@@ -7,10 +7,14 @@ NEVER call `write_ducalis` with `confirm: true` without first receiving the `[WR
 ### Flow
 
 1. User requests an issue change (create, edit, delete, label, etc.)
-2. Gather required data via `read_ducalis` — resolve IDs from names
+2. For **create_issue / update_issue**: one `read_ducalis({ resource: "issue_context", board_uuid })` — returns board language, default_status id+name, all statuses, all labels, all issue types, and the issue description template in one shot. For other actions use narrower reads (`labels` / `statuses` with `kind: "issue"`, or `issues` / `issue`).
 3. Call `write_ducalis({ action, params, confirm: false })` **in the same response** — preview card with OK/Edit buttons appears automatically. Do NOT ask for text confirmation.
 4. User clicks OK: you receive `[WRITE_CONFIRMED]`. Immediately call `write_ducalis` with the SAME action and params + `confirm: true`
 5. User clicks Edit: you receive `[WRITE_EDIT] <instructions>`. Adjust params per instructions, call `confirm: false` again
+
+**Default status.** Don't pass `status_id` unless the user explicitly names a column. Backend auto-assigns the board's default status (`is_default = true`, `system_status = "todo"`).
+
+**Content language.** `issue_context.language` is authoritative for title + description. Never mix languages.
 
 ### Actions
 
@@ -49,9 +53,9 @@ Labels are workspace-scoped (shared across ALL boards). Creating duplicates poll
 
 **Mandatory flow (4-5 tool calls max for any label operation):**
 
-1. **Discover** — read board issues + workspace dictionary in parallel:
+1. **Discover** — read board issues + board-scoped labels in parallel:
    - `read_ducalis({ resource: "issues", board_uuid, include: ["labels"], limit: 1 })` — meta has `board_labels: [{name, count}]`
-   - `read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "label" } })` — full dictionary with IDs
+   - `read_ducalis({ resource: "labels", board_uuid, kind: "issue" })` — full label set with IDs
 2. **Analyze & present** — tell the user what you found:
    - Which labels exist on this board (from board_labels meta)
    - Which workspace labels could be reused
@@ -75,9 +79,9 @@ For 2+ identical operations, use the `batch` action (see base skill for syntax).
 
 ### Prerequisite reads — resolve IDs before writing
 
-- **Board UUID**: `read_ducalis({ resource: "boards" })` — always step 1
+- **Board UUID**: taken from the page context when available; otherwise `read_ducalis({ resource: "boards", include: ["voting"] })`
 - **Assignee/reporter**: `read_ducalis({ resource: "board", board_uuid, include: ["members"] })`
-- **Labels/status/type IDs**: `read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "label" } })` — workspace-level dictionary
+- **Labels / statuses / types**: `read_ducalis({ resource: "issue_context", board_uuid })` for create/update (all three + template in one hit), or narrow `labels` / `statuses` with `board_uuid + kind: "issue"`
 - **Issue existence**: `read_ducalis({ resource: "issue", board_uuid, issue_id })` — verify before update/delete
 
 ### Gotchas

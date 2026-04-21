@@ -13,30 +13,22 @@ customer message to save into Ducalis.
 
 ---
 
-### Step 1 — Board discovery (ALWAYS FIRST, exactly ONE call)
+### Step 1 — Resolve the board (ZERO fetch when page context has one)
 
-```
-read_ducalis({
-  resource: "boards",
-  include: ["voting", "members_full", "description_template", "idea_description_template"],
-})
-```
+Three branches, pick exactly one:
 
-Each result has: `uuid`, `name`, `emoji`, `voting.{name,emoji,enabled}`,
-`members_full[{id,name,email}]`, `description_template` (issue template),
-`idea_description_template` (voting-board idea template — only present when
-Idea Template is enabled in board settings).
+1. **Current Context shows a voting board** (`pageType = "voting_board"` + `boardUuid`) — use that `boardUuid` directly. This is the idea flow. **No read_ducalis call.** Skip to Step 2.
+2. **Current Context shows a regular board / issues page** (`boardUuid` present, not a voting board) — use that uuid. This is the issue flow. **No read_ducalis call.** Skip to Step 2.
+3. **No board in context** (dashboard, unknown page) — and only then:
+   ```
+   read_ducalis({ resource: "boards", include: ["voting"] })
+   ```
+   Match the user's words against `name` / `voting.name`. If unique — pick it.
+   If 2+ plausible — ask the user to choose. Never add other `include` fields
+   here — labels, statuses, templates come from Step 3, not this list.
 
-**Board matching rules:**
-- Match the user's words against `name` and `voting.name`
-  (e.g. "роадмапе" → board named "Roadmap", "баги" → "Bugs").
-- If one clear match — proceed. If 2+ plausible — ask user to pick.
-- Unknown words in the user's message are **board name filters**, not Ducalis entity types.
-  **Never** say "нет такого ресурса".
-
-Display boards when asking:
-- Plain: `🚀 Help Center Deploy`
-- With ideas board: `🚀 Help Center Deploy → ideas: 💡 Help Center Ideas`
+**Never** say "нет такого ресурса" — unknown words in the user's message are
+board-name filters, not Ducalis entity types.
 
 ---
 
@@ -44,98 +36,138 @@ Display boards when asking:
 
 | User wording | Create |
 |--------------|--------|
-| "задача", "баг", "bug", "issue", "в беклог", "в бэклог" | **Issue** on the main board |
-| anything else / unclear | **Idea** — unformed signal |
+| "задача", "баг", "bug", "issue", "в беклог", "в бэклог" | **Issue** flow |
+| anything else / unclear | **Idea** flow (default on voting boards) |
 
-- Ideas go to the board's ideas board (same `board_uuid`; `voting.enabled` may
-  be false — still fine, the idea just lives on the main board).
-- Issues go to the main board.
+On a voting board the default is **idea** (that's the point of the public
+roadmap). On a regular board the default is **issue**.
 
 ---
 
-### Step 3 — Fetch labels + statuses for the chosen board (ONE call)
+### Step 3 — Fetch full board context in ONE call
 
-```
-read_ducalis({ resource: "dictionaries", board_uuid: "<chosen_uuid>" })
-```
+Depending on the branch:
 
-Returns all of: `label`, `status`, `issue_type`, `idea_label`, `idea_status`.
+- **Idea flow:**
+  ```
+  read_ducalis({ resource: "idea_context", board_uuid: "<uuid>" })
+  ```
+  Returns: `board_name`, `board_emoji`, `language`, `description_template`
+  (if enabled), `inbox_status_id` + `inbox_status_name`, `statuses[]` (each
+  with `is_inbox`), `labels[]`.
 
-Pick:
-- **For ideas:** `idea_status` with `system_status = "new"`, else the first.
-- **For issues:** `status` with `system_status = "new"`, else the first.
-- **Labels:** scan `label` (issues) or `idea_label` (ideas), pick 1-3 that are
-  clearly relevant to the request. If nothing is clearly relevant — omit labels.
+- **Issue flow:**
+  ```
+  read_ducalis({ resource: "issue_context", board_uuid: "<uuid>" })
+  ```
+  Returns: `board_name`, `board_emoji`, `language`, `description_template`
+  (issue template), `default_status_id` + `default_status_name`, `statuses[]`
+  (each with `is_default`), `labels[]`, `issue_types[]`.
+
+**Never** call `resource: "dictionaries"` — that resource no longer exists.
+For a standalone label/status lookup outside the create flow, use
+`labels` / `statuses` with `board_uuid` + `kind: "idea" | "issue"`.
 
 ---
 
 ### Step 4 — Silently assemble params
 
-Work these out without narrating them in chat:
+**Content language.** Write the title **and** description fully in
+`context.language` (fallback `"en"` when null). Never mix languages —
+Russian title + English body is a bug. If the idea template placeholders are
+in language X, write answers in language X. The language of the chat with the
+admin stays Russian/whatever it is — that's only for the preview text, not
+for the content that goes into Ducalis.
 
-**Assignee (fuzzy match `members_full` from Step 1 — NO extra API call):**
-- Omitted or "на себя" → the `User` id from the Current Context block.
-- "на Диму" / "@Надя" → the member whose `name` contains the token
-  (case-insensitive). If exactly one match — use it silently; mention the
-  resolved name in the preview. If 0 matches — fall back to self. If 2+ —
-  pick the closest and note alternatives in the preview.
+**Status — idea flow:**
+- If the user **explicitly** names a column ("в Met prioriteit", "в Backlog") —
+  find the matching status in `context.statuses`, send `status_id`.
+- Otherwise — **do not pass `status_id` at all**. Backend auto-assigns the
+  inbox column (`is_inbox: true`). This is the correct default.
+
+**Status — issue flow:**
+- Same principle. Explicit column → resolve via `context.statuses`,
+  send `status_id`. Otherwise omit — backend defaults to
+  `default_status_id`.
+
+**Labels:** from `context.labels`, pick 1–3 semantically relevant entries.
+Prefer specific labels (e.g. `AI`, `MCP`) over general ones (e.g.
+`Integrations`) when both fit. If nothing is clearly relevant — omit.
 
 **Description (HTML, two parts, always in this order):**
-1. Structured top part shaped by the board's template — for **ideas** prefer
-   `idea_description_template` (voting board's Idea Template), for **issues**
-   use `description_template`. Keep it short: 2-4 concise paragraphs (`<p>`),
-   bullet lists where natural. If the board has no matching template, write a
-   brief context/intent paragraph.
+1. Structured top part following `context.description_template` when present.
+   Keep it short: 2–4 concise paragraphs (`<p>`), bullet lists where natural.
+   If there's no template — brief context/intent paragraph.
 2. Raw source at the end:
    ```html
    <hr>
-   <h3>Исходное сообщение</h3>
+   <h3>Original message</h3>
    <blockquote><p>…verbatim Slack thread / email / request…</p></blockquote>
    ```
+   Heading and quote stay in the board's language too.
 
 Never Markdown — rich-text fields are HTML fragments.
 
-**Title:** plain text, one line, 40–90 chars, no HTML, no trailing period.
+**Title:** plain text, one line, 40–90 chars, no HTML, no trailing period,
+in the board's language.
+
+**Assignee (issue flow only — fuzzy match from page-context members if
+already shown; otherwise skip or use Current Context's user id):**
+- Omitted or "на себя" → the `User` id from the Current Context block.
+- Explicit name — don't fetch members for this; the user can correct via
+  Edit button if needed.
 
 ---
 
 ### Step 5 — Preview + ONE write_ducalis call
 
-Final visible text before the confirm card:
+The preview text addresses the admin in **their** language (the chat
+language), but `title` and a snippet of `description` appear verbatim in the
+board's language. That visible language switch is correct — it shows the
+admin what actually lands in Ducalis.
 
-> Создам *[идею/задачу]* *[title]* в борде *[Board]*, assignee *[Name]*,
-> теги *[labels or —]*. Верно?
+For the **idea** flow:
+> Создам идею в *[board_name]* (колонка: *[inbox_status_name]*, язык:
+> *[language]*): "*[title]*" — labels: *[…]*. Подтверждаешь?
 
-For **ideas** on a voting board, use `voting.name` as `[Board]` (that's the
-user-facing name of the voting board — e.g. "Public Roadmap"). Use `name` only
-for issues or when `voting.name` is absent.
+For the **issue** flow:
+> Создам задачу в *[board_name]* (статус: *[default_status_name]*, язык:
+> *[language]*): "*[title]*" — labels: *[…]*, assignee: *[name]*. Подтверждаешь?
 
 Then call exactly once:
 
 ```
 write_ducalis({
   action: "create_idea" | "create_issue",
-  params: { board_uuid, name, description, status_id, assignee_id, label_ids? },
+  params: { board_uuid, name, description, label_ids?, status_id?, /* + assignee_id for issue */ },
   confirm: false,
 })
 ```
 
-The adapter renders confirm/edit/cancel buttons. Do **not** call `write_ducalis`
-again in this turn — the actual write happens outside the LLM when the user
-clicks ✅.
+The adapter renders confirm/edit/cancel buttons. Do **not** call
+`write_ducalis` again in this turn — the actual write happens outside the LLM
+when the user clicks ✅.
 
 ---
 
 ### HARD rules
 
-- **Exactly one** `write_ducalis({ confirm: false })` per response. Never two.
-- **Exactly one** board-discovery `read_ducalis` (Step 1). Never split.
-- **Max two** `read_ducalis` calls total (Step 1 + Step 3). Nothing else.
+- **Exactly one** `write_ducalis({ confirm: false })` per response.
+- **Zero or one** board-discovery `read_ducalis` (Step 1, only if page
+  context has no `boardUuid`).
+- **Exactly one** context `read_ducalis` (Step 3 — `idea_context` or
+  `issue_context`).
+- **Max two** `read_ducalis` calls total. Never split labels/statuses
+  into separate reads.
+- Never call `resource: "dictionaries"` — it no longer exists.
+- Never pass `include: ["description_template", "idea_description_template"]`
+  to `boards` — templates live on context resources now.
+- Never pass `status_id` unless the user explicitly named the column.
 - Silent between tool calls — no narration like "Нашёл борд…", "Сейчас
   проверю статусы…". Only emit the Step 5 preview text at the end.
 - Never print `[WRITE_CONFIRMED]` or `[WRITE_EDIT]` in visible text.
-- Never call `write_ducalis` with `confirm: true` yourself — execution happens
-  outside the LLM after the button click.
+- Never call `write_ducalis` with `confirm: true` yourself — execution
+  happens outside the LLM after the button click.
 
 ---
 
@@ -145,3 +177,6 @@ When the user clicks ✏️ *Изменить*, the adapter posts the previous p
 a quote followed by "Что поменять?". The user's next message ("не на Диму, на
 Надю") arrives with that quote already in thread context — re-run Step 4
 (assemble params) with the correction applied, then Step 5 (new preview).
+The context resource result from the earlier turn is usually still fresh —
+you don't need to re-fetch `idea_context` / `issue_context` unless the
+board changed.

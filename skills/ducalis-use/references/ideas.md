@@ -19,7 +19,7 @@ Ideas are user-submitted feature requests on a board. Each has a status, label s
 
 **Filter by status (name OR id):**
 `read_ducalis({ resource: "ideas", board_uuid: "<uuid>", where: [{ field: "status", op: "eq", value: "Under review" }] })`
-- Use `status_id` (in `where`) when you already have the id from `dictionaries`/`statuses` meta.
+- Use `status_id` (in `where`) when you already have the id from `statuses` (with `kind: "idea"`) meta.
 
 **Filter by label:**
 `read_ducalis({ resource: "ideas", board_uuid: "<uuid>", include: ["labels"], where: { field: "labels", op: "contains", value: "ux" } })`
@@ -54,11 +54,13 @@ For a flat list of all idea comments on a board:
 - `defaults`: `id`, `voting_issue_id`, `idea_name`, `author`, `message`.
 - Filter to one idea: `where: { field: "voting_issue_id", op: "eq", value: <idea_id> }`.
 
-### Status / label dictionary
+### Status / label lookup
 
-Idea-side dictionaries are exposed alongside issue ones:
-`read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "idea_status" } })`
-`read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "idea_label" } })`
+Use the board-scoped narrow resources (filtered by `kind`):
+`read_ducalis({ resource: "statuses", board_uuid: "<uuid>", kind: "idea" })` — returns all idea statuses on the board, with `is_inbox` flag on the inbox column.
+`read_ducalis({ resource: "labels", board_uuid: "<uuid>", kind: "idea" })` — returns all idea labels on the board.
+
+For the create/update flow, prefer the composite `idea_context` — it returns template + language + inbox + statuses + labels in one request.
 
 ### Filter by voter / company (cross-board by default)
 

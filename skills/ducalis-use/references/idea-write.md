@@ -7,10 +7,14 @@ NEVER call `write_ducalis` with `confirm: true` without first receiving the `[WR
 ### Flow
 
 1. User requests an idea change (create/update/vote/comment/merge/etc.)
-2. Resolve required IDs via `read_ducalis` (board uuid, status name → id, label name → id)
+2. For **create_idea / update_idea**: one `read_ducalis({ resource: "idea_context", board_uuid })` — it returns language, inbox status id+name, all board statuses, all board labels, and the idea description template in one shot. For narrower lookups outside the create flow use `labels` / `statuses` with `kind: "idea"`.
 3. Call `write_ducalis({ action, params, confirm: false })` in the SAME response — preview card with OK/Edit appears automatically
 4. On `[WRITE_CONFIRMED]` — call the same action with `confirm: true`
 5. On `[WRITE_EDIT] <instructions>` — adjust params, call `confirm: false` again
+
+**Default column = inbox.** Don't pass `status_id` unless the user explicitly names a column. Backend auto-assigns the board's inbox (`system_status = "under_review"`). `idea_context.inbox_status_name` is just for the preview; don't send it as `status_id`.
+
+**Content language.** `idea_context.language` is authoritative — write title and description fully in that language. Never mix (Russian title + English body is a bug).
 
 ### Actions
 
@@ -42,7 +46,7 @@ NEVER call `write_ducalis` with `confirm: true` without first receiving the `[WR
 #### Cross-board copy / move
 - **copy_idea** — `idea_id` + `target_board_uuid` + (`target_status_id` OR `target_status_name`). Optional `keep_issue` (default false), `keep_comments` (default true).
 - **move_idea** — same payload, but removes from source.
-- BEFORE preview: read target board's idea statuses (`read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "idea_status" } })` — labels/statuses do not auto-remap, so verify the target_status name exists on the target board).
+- BEFORE preview: read target board's idea statuses (`read_ducalis({ resource: "statuses", board_uuid: "<target_uuid>", kind: "idea" })` — labels/statuses do not auto-remap, so verify the target_status name exists on the target board).
 
 #### Idea label dictionary (board-scoped)
 - **create_idea_label** — `board_uuid` + `name`; optional `color` (#hex)
@@ -59,7 +63,7 @@ NEVER call `write_ducalis` with `confirm: true` without first receiving the `[WR
 ### Reuse-first workflow for labels & statuses
 
 Idea labels and statuses are board-scoped. Before creating a new one:
-1. `read_ducalis({ resource: "dictionaries", where: { field: "type", op: "eq", value: "idea_label" } })` — see what exists
+1. `read_ducalis({ resource: "labels", board_uuid, kind: "idea" })` — see what exists (same for `statuses`)
 2. Show the user existing options and ask: reuse, create new, or both?
 3. Only on confirmation, call `create_idea_label` / `create_idea_status`
 
