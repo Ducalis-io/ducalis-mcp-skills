@@ -37,6 +37,23 @@ Returns basic fields (name, status, type, description, assignee). No score/crite
 - Name-based: `assignee`, `reporter`, `status`, `type` — use `contains` for substring. ⚠️ Assignee names may differ between Ducalis and tracker.
 - ID-based: `assignee_id`, `reporter_id`, `status_id`, `type_id` — use `eq` or `in` for exact match. ⚠️ `assignee_id` may be null for tracker-synced tasks.
 
+### Semantic search (Typesense, RU+EN)
+
+When the user asks about a topic ("задачи про AI", "что было про performance", "everything about onboarding") or wants similar to a known one — use `query` / `similar_to_id`. The data source switches from `/storage/issues` to Typesense (cross-board by default, no `board_uuid` required).
+
+**Topic / Q&A:**
+`read_ducalis({ resource: "issues", query: "AI ассистент", query_mode: "chat", limit: 20 })`
+Returns compact list (id+name+status+labels+link). Then for full detail follow up with `read_ducalis({ resource: "issues", board_uuid, issue_ids: [...] })`.
+
+**Pre-create de-dup (use BEFORE create_issue):**
+`read_ducalis({ resource: "issues", query: "<title>\n\n<body>", query_mode: "dedup", limit: 5 })`
+
+**Similar to existing:**
+`read_ducalis({ resource: "issues", similar_to_id: 891749, limit: 10 })`
+
+**Scope to a board:** add `where: { field: "board_uuid", op: "eq", value: "<uuid>" }`.
+**Failure:** if Typesense is unreachable (VPN), the call returns "Typesense unavailable" — fall back to a regular `where` filter without `query`.
+
 ### Navigation
 - "Open issue #X": `[Issue Name](/issue/{id})` — NO API call needed
 - After listing: format each as `[Issue Name](/issue/{id})`

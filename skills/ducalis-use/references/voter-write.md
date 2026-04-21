@@ -36,8 +36,9 @@ User: «Создай идею про <feature> от <voter name> из <company n
 
 2. **(Optional) Pre-check duplicates:**
    ```
-   read_ducalis({ resource: "similar_ideas", board_uuid, query: "<рабочее название>" })
+   read_ducalis({ resource: "ideas", query: "<рабочее название>\n\n<описание>", query_mode: "dedup", limit: 5 })
    ```
+   (Typesense semantic lookup — RU+EN, cross-board. Add `where: { field: "board_uuid", op: "eq", value: board_uuid }` to scope.)
    If a high-vote duplicate exists → ask "Воткнуть голос voter'а в существующую идею или создать новую?"
    - Existing → `vote_idea({ idea_id, voting_user_id: <voter_id> })`
    - New → continue.

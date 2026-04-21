@@ -112,7 +112,7 @@ When the user says "создай идею от <имя> из <компании>"
 
 1. `read_ducalis({ resource: "voting_users", query: "<имя или email>" })` — search.
 2. Disambiguate / confirm new voter creation.
-3. (Optional) `read_ducalis({ resource: "similar_ideas", board_uuid, query: "<рабочее название>" })` — duplicate check.
+3. (Optional) `read_ducalis({ resource: "ideas", query: "<рабочее название>\n\n<описание>", query_mode: "dedup", limit: 5 })` — duplicate check (Typesense semantic, RU+EN). Scope to a board via `where: { field: "board_uuid", op: "eq", value: board_uuid }` if needed.
 4. `create_idea` with `voting_user_id` (preferred) OR `voting_user_email` shortcut + `vote: 1`.
 
 The `voting_user_email` shortcut on `create_idea` resolves email → voter id at execute. It throws if the email isn't a known voter — so always offer `create_voting_user` first when search returns 0.

@@ -92,11 +92,15 @@ For browsing voters/companies as primary entities, see `voters.md`.
 `include: ["voter_count", "voter_emails", "company_names"]` on `idea` singular gives you who voted without dumping full voter objects.
 `include: ["stats"]` triggers a lazy fetch of `/rest/boards/{uuid}/ideas/{id}/stats` (votes_total, voters_count, companies_count).
 
-### Pre-create de-dup check
+### Semantic search (Typesense)
 
-Before `create_idea`, check whether something similar already exists on the board:
-`read_ducalis({ resource: "similar_ideas", board_uuid, query: "<рабочее название>" })`
-Defaults to top-5. Surfaces id + name + status + vote_count.
+`resource: "ideas"` supports bilingual semantic search (RU+EN via embeddings) via Typesense. Triggered when `query` or `similar_to_id` is set — replaces the regular `/storage/ideas` scan.
+
+- **"Идеи про <topic>"** — `read_ducalis({ resource: "ideas", query: "<topic>", query_mode: "chat", limit: 20 })`. Returns compact hits (id+name+status+labels+link). If the user needs details — follow up with `read_ducalis({ resource: "ideas", issue_ids: [...] })`.
+- **Pre-create de-dup** — `read_ducalis({ resource: "ideas", query: "<title>\n\n<body>", query_mode: "dedup", limit: 5 })`. Balanced title+body weighting — surfaces potential duplicates before `create_idea`.
+- **Similar to an existing idea** — `read_ducalis({ resource: "ideas", similar_to_id: <idea_id>, limit: 10 })`. Pure vector similarity; use when the user says "похожие на эту".
+
+Cross-board by default. Add `where: { field: "board_uuid", op: "eq", value: "<uuid>" }` to scope to one board.
 
 ### Navigation
 

@@ -17,6 +17,9 @@ NEVER call `write_ducalis` with `confirm: true` without first receiving the `[WR
 **create_issue** — Create a new issue on a board
 - Required: `board_uuid`, `name`
 - Optional: `description` (HTML — rule 7), `assignee_id`, `reporter_id`, `status_id`, `type_id`, `custom_fields`
+- **Before preview** — run a Typesense de-dup lookup so duplicates surface to the user before the create card:
+  `read_ducalis({ resource: "issues", query: "<name>\n\n<plain description>", query_mode: "dedup", limit: 5 })`
+  If close matches exist → ask the user "Похоже на уже существующее — обновим / привяжем / всё-таки создадим новое?" before calling `create_issue`.
 
 **update_issue** — Update issue fields (only include fields being changed)
 - Required: `board_uuid`, `issue_id`
