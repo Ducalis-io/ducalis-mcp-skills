@@ -89,6 +89,39 @@ read_ducalis({ resource: "ideas", company_id: <id>, where: { field: "status", op
 
 For browsing voters/companies as primary entities, see `voters.md`.
 
+### Privacy — idea content is public
+
+Idea `name`, `description`, and comments are visible to every voter/admin on the board. **Never put PII** (real names, emails, companies, phone numbers) into these fields — it's a leak.
+
+When the user supplies customer context like "<Person> from <Company> also wants idea N, their quote: …":
+- Keep the quote OUT of the description. A voter's request belongs on the voter profile, not in the public idea body.
+- Attach the voter to the idea with `attribute_idea_to_voter` — that's where the quote's context lives (voter email + company → idea).
+- If the quote adds a NEW reason the idea is valuable, rephrase the takeaway anonymously ("A customer needs per-idea privacy levels") and consider updating `description` with that feature-centric framing — never with the quote verbatim.
+- Commenting on behalf of a specific voter is NOT supported by the backend — skip it; don't work around it.
+
+### Attribute an idea to a voter (composite)
+
+```
+write_ducalis({
+  action: "attribute_idea_to_voter",
+  params: {
+    idea_id: <idea id>,
+    voter_id: <id>,              // preferred — from voting_users fuzzy search
+    // OR voter_email: "<email>" // backend auto-creates the voter
+    vote: 1,                     // default 1; use 0 + voter_id to detach
+    voter_name: "<Name>",        // display-only, shown in preview
+    voter_company: "<Company>",  // display-only
+    idea_name: "<Idea name>"     // display-only
+  },
+  confirm: false
+})
+```
+
+Flow for "<Name> из <Company> тоже хочет идею N, его запрос: …":
+1. `read_ducalis({ resource: "voting_users", query: "<Name> из <Company>", limit: 5 })` — top candidates with `score` + `match_reason`. If top `score` ≥ 0.7 and unique → proceed; else ask the user which one.
+2. `attribute_idea_to_voter({ idea_id, voter_id, voter_name, voter_company, idea_name })` — single preview, single confirm.
+3. Do NOT post the voter's quote as a comment (not supported) and do NOT paste it into `description`.
+
 ### Voters & dynamics on a single idea
 
 `include: ["voter_count", "voter_emails", "company_names"]` on `idea` singular gives you who voted without dumping full voter objects.

@@ -4,6 +4,10 @@
 
 Same flow as all writes: call with `confirm: false`, wait for `[WRITE_CONFIRMED]`, then `confirm: true`. Never display the signal in your text.
 
+### CRITICAL: Pass display-only names with every voter write
+
+Every voter action accepts optional display-only fields (`voter_name`, `voter_email`, `board_name`, `voter_names: []`, `board_names: []`, `idea_name`). Pass them from the search result so the preview card reads "Attach Kamil Samigullin <kksamigullin@avito.ru> from Avito as supporter of 'Privacy for voting ideas'" instead of "Attach voter #89708 to idea #21733". These fields are stripped from the HTTP body at execute time — they exist only for the human confirming the write. Never skip them when you already have the names in hand.
+
 ### Actions
 
 #### CRUD
@@ -13,6 +17,10 @@ Same flow as all writes: call with `confirm: false`, wait for `[WRITE_CONFIRMED]
 
 #### Bulk
 - **bulk_create_voting_users** — `emails: string[]`. Use for CSV-style import where you have many emails and no per-row metadata. For per-row metadata (different names/companies), use `batch` over `create_voting_user`.
+
+#### Idea attach
+
+- **attribute_idea_to_voter** — one-step "X wants idea Y". Params: `idea_id` + either `voter_id` (preferred) OR `voter_email` (backend auto-creates the voter if unknown); `vote: 1` (default) or `0` (detach, `voter_id` required); display-only `voter_name`, `voter_company`, `idea_name`. Preflight via fuzzy search in `voters.md`. Read-back confirms the voter ended up in `voting_users[]`.
 
 #### Board attach
 - **add_voter_to_board** — `board_uuid` + `voting_user_id` (req). Attach an existing voter to a specific board so they can be invited / appear in board voter lists.

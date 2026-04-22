@@ -16,19 +16,25 @@ Voters (`voting_users`) and companies (`voting_companies`) are the **customer-co
 read_ducalis({ resource: "voting_users", limit: 30, sort_by: "votes_count", sort_order: "desc" })
 ```
 
-Common fields (defaults): `id`, `name`, `email`, `company` (string), `votes_count`.
-Available via `include`: `ideas_count`, `comments_count`, `plan_name`, `paying_now`, `mrr`, `total_spend`, `annual_plan`, `last_activity`, `signup_date`, `subscribed_boards`, `accessible_boards`.
+Common fields (defaults): `id`, `name`, `email`, `company` (string), `votes_count`. When `query` is supplied, extra fuzzy-resolver fields `score` (0..1) and `match_reason` are attached so the agent can see why each candidate matched.
+Available via `include`: `ideas_count`, `comments_count`, `plan_name`, `paying_now`, `mrr`, `total_spend`, `annual_plan`, `last_activity`, `signup_date`, `subscription_start`, `users`, `voted_ideas`, `trackers`, `subscribed_boards`, `accessible_boards`.
 
-**Search by name/email** — server-side via Ducalis suggests:
+**Fuzzy search with cyrillic:** `/storage/voting-users?query=…` on the backend runs ILIKE and does NOT transliterate — a bare `query: "Камиль"` would miss `Kamil Samigullin` entirely. The `voting_users` resource handles this client-side: it generates ru↔en variants, fires parallel probes, unions results, and re-ranks with token + company overlap + activity prior. The composite form `"<Name> из/from <Company>"` is parsed: the company part is a strong ranking boost.
+
+**Single-call fuzzy search — ALWAYS via `query`, never via multiple `where` lookups.** One `query` string covers all name/email/company variants in a single tool call. Do NOT split it into 2–3 separate `where` calls (per company-name variant, per translit). The resolver internally generates ru↔en transliteration, punctuation variants ("Т-Банк" ↔ "Тбанк" ↔ "Tbank"), and strips Russian grammatical endings ("Т-Банка" → "Т-Банк"). If 0 hits — the voter really doesn't exist, offer `create_voting_user`; don't retry with different spellings.
+
+**Search by name/email (fuzzy):**
 ```
-read_ducalis({ resource: "voting_users", query: "John" })
-read_ducalis({ resource: "voting_users", query: "john@example.com" })
+read_ducalis({ resource: "voting_users", query: "<voter name>" })
+read_ducalis({ resource: "voting_users", query: "<voter name> из <Company>" })
+read_ducalis({ resource: "voting_users", query: "<voter@example.com>" })
 ```
-Or via `where`:
+Output is ranked: top candidate first, each item includes `score` and `match_reason`. Exact-email match always scores 1.0. Prefer the top candidate unless `score` < 0.6 or two results are near-tied, in which case ask the user.
+
+Or via `where` for strict filters:
 ```
 read_ducalis({ resource: "voting_users", where: { field: "email", op: "contains", value: "@example.com" } })
 ```
-(both routes call the same `/rest/voting-users/suggests` endpoint).
 
 **Filter paying / segment** — the `vcf_*` fields are flattened from the user's company and surfaced as plain fields on the voter:
 ```
