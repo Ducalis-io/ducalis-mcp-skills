@@ -19,7 +19,7 @@ NEVER call `write_ducalis` with `confirm: true` without first receiving the `[WR
 ### Actions
 
 #### CRUD
-- **create_idea** — `board_uuid` + `name` (req); optional `description` (HTML), `status_id` or `status_name`, `allow_voting`, `voting_user_id`, `vote` (initial vote 0/1), `issue_id` (link to existing issue at create time), `custom_fields` (object)
+- **create_idea** — `board_uuid` + `name` (req); optional `description` (HTML), `status_id` or `status_name`, **`label_names`** (array of exact names from `idea_context.labels`), `allow_voting`, `voting_user_id`, `vote` (initial vote 0/1), `issue_id` (link to existing issue at create time), `custom_fields` (object). **Never invent `label_ids`** — idea labels are board-scoped; IDs from other boards look plausible but get rejected. Always use `label_names`.
 - **update_idea** — `idea_id` (req); any of `name`, `description`, `status_id`/`status_name`, `allow_voting`, `custom_fields`. `board_uuid` auto-resolved if omitted. Status change auto-creates a system comment on the idea.
 - **delete_idea** — `idea_id` (req). PERMANENT — votes, comments lost.
 
