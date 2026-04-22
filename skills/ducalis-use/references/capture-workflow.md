@@ -139,7 +139,11 @@ Then call exactly once:
 ```
 write_ducalis({
   action: "create_idea" | "create_issue",
-  params: { board_uuid, name, description, label_ids?, status_id?, /* + assignee_id for issue */ },
+  params: {
+    board_uuid, name, description, label_names?, status_id?,
+    /* issue flow: assignee_id */
+    /* idea flow, user mentioned a voter: voting_user_id, vote: 1 — see voter-write.md */
+  },
   confirm: false,
 })
 ```
