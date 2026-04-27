@@ -18,7 +18,7 @@ NEVER display `[WRITE_CONFIRMED]` or `[WRITE_EDIT]` in your text — these are h
 - Vote value MUST be from the criterion's `scale` (e.g. "1,2,3,5,8,13")
 
 **batch_vote** — Set multiple scores at once (preferred for evaluation)
-- Required: `board_uuid`, `votes[]` — each with `issue_id`, `criterion_id`, `vote`
+- Required: `board_uuid`, `votes[]` — each with `issue_id`, `criterion_id`, `vote` (field name is `vote`, not `value`)
 
 **skip_issue** — Skip issue from evaluation
 - Required: `board_uuid`, `issue_id`
